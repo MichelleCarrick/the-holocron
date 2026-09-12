@@ -16,6 +16,7 @@ export default defineType({
           {title: 'Character', value: 'character'},
           {title: 'Planet', value: 'planet'},
           {title: 'Species', value: 'species'},
+          {title: 'Kyber Crystal', value: 'kyberCrystal'},
           {title: 'Faction / Organization', value: 'faction'},
           {title: 'Vehicle / Ship', value: 'vehicle'},
           {title: 'Technology / Artifact', value: 'technology'},

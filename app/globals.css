@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #05060a;
+  --foreground: #e8e8ec;
+  --color-gold: #c9a24a;
+  --color-lightside: #4fa8ff;
+  --color-darkside: #ff3b3b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-gold: var(--color-gold);
+  --color-lightside: var(--color-lightside);
+  --color-darkside: var(--color-darkside);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-orbitron);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  background-image:
+    radial-gradient(1px 1px at 40px 60px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 140px 20px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 90px 130px, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 200px 90px, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(1px 1px at 10px 180px, rgba(255, 255, 255, 0.35), transparent);
+  background-repeat: repeat;
+  background-size: 220px 220px;
+  background-attachment: fixed;
+}
+
+@keyframes detail-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-fade-in {
+  animation: detail-fade-in 200ms ease-out;
+}
+
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.enter-fade {
+  animation: enter-fade 500ms ease-out both;
+}
+
+/* A faint diagonal light sweep on hover — a "holographic panel" feel used
+   consistently for every clickable card across the site. */
+.holo-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.holo-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.08) 50%, transparent 60%);
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+
+.holo-card:hover::after {
+  transform: translateX(120%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    animation: starfield-drift 140s linear infinite;
+  }
+}
+
+@keyframes starfield-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -220px -220px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-fade,
+  .detail-fade-in {
+    animation: none;
+  }
+  .holo-card::after {
+    transition: none;
+    display: none;
+  }
 }

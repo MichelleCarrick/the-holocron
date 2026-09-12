@@ -1,22 +1,20 @@
 import { client } from "../sanity/lib/client";
-
-type ArchiveEntry = {
-  _id: string;
-  title: string;
-  category: string;
-  era?: string;
-  summary?: string;
-};
+import ArchiveBrowser, { type ArchiveEntry } from "./ArchiveBrowser";
+import Watermark from "./Watermark";
 
 async function getEntries(): Promise<ArchiveEntry[]> {
   return client.fetch(
     `*[_type == "archiveEntry"] | order(title asc){
       _id,
       title,
+      "slug": slug.current,
       category,
       era,
-      summary
-    }`
+      summary,
+      image
+    }`,
+    {},
+    { next: { revalidate: 0 } }
   );
 }
 
@@ -24,39 +22,19 @@ export default async function Home() {
   const entries = await getEntries();
 
   return (
-    <div className="flex flex-col flex-1 items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center py-16 px-8">
-        <h1 className="text-4xl font-bold mb-8 text-black dark:text-zinc-50">
-          The Holocron
-        </h1>
-
-        {entries.length === 0 ? (
-          <p className="text-zinc-600 dark:text-zinc-400">
-            No entries yet. Add one in the Studio at /studio.
+    <div className="flex flex-1 flex-col items-center">
+      <main className="flex w-full max-w-6xl flex-1 flex-col items-center px-6 py-16 sm:px-10">
+        <div className="enter-fade relative mb-14 text-center">
+          <Watermark className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-72 w-72 -translate-x-1/2 -translate-y-1/2 text-gold opacity-[0.06]" />
+          <h1 className="font-display text-4xl tracking-[0.15em] text-gold sm:text-5xl">
+            THE HOLOCRON
+          </h1>
+          <p className="mt-4 text-zinc-400">
+            A living archive of lore from across the galaxy.
           </p>
-        ) : (
-          <ul className="w-full flex flex-col gap-6">
-            {entries.map((entry) => (
-              <li
-                key={entry._id}
-                className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-6"
-              >
-                <h2 className="text-2xl font-semibold text-black dark:text-zinc-50">
-                  {entry.title}
-                </h2>
-                <p className="text-sm uppercase tracking-wide text-zinc-500 mb-2">
-                  {entry.category}
-                  {entry.era ? ` • ${entry.era}` : ""}
-                </p>
-                {entry.summary && (
-                  <p className="text-zinc-700 dark:text-zinc-300">
-                    {entry.summary}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        </div>
+
+        <ArchiveBrowser entries={entries} />
       </main>
     </div>
   );
