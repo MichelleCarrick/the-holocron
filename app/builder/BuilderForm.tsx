@@ -671,86 +671,116 @@ function Stat({
 }
 
 function DetailPanel({ detail, onClose }: { detail: ActiveDetail | null; onClose: () => void }) {
+  const isOpen = !!detail
+
+  // Lock background scroll while the panel is open — on mobile, a scrollable
+  // page behind a fixed overlay makes swipes feel like they're fighting the
+  // panel instead of dismissing it.
+  useEffect(() => {
+    if (!isOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen])
+
+  // Let Escape close it too, since on mobile the panel takes the full width
+  // and there's no backdrop left to tap.
+  useEffect(() => {
+    if (!isOpen) return
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   return (
     <>
       <div
-        className={`fixed inset-0 z-10 bg-black/60 transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-300 ${
           detail ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         onClick={onClose}
       />
       <aside
-        className={`fixed inset-y-0 right-0 z-20 w-[min(24rem,90vw)] overflow-y-auto border-l border-gold/20 bg-zinc-950/95 p-6 shadow-[-20px_0_60px_rgba(0,0,0,0.6)] backdrop-blur-md transition-transform duration-300 ease-out ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-gold/20 bg-zinc-950/95 shadow-[-20px_0_60px_rgba(0,0,0,0.6)] backdrop-blur-md transition-transform duration-300 ease-out sm:w-96 sm:max-w-[24rem] ${
           detail ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {detail && (
-          <div key={detail.item._id} className="detail-fade-in flex flex-col gap-5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="self-end text-sm text-zinc-500 transition-colors hover:text-gold"
-            >
-              ✕ Close
-            </button>
-
-            <div className="relative h-40 w-full overflow-hidden rounded-lg bg-zinc-800 ring-1 ring-white/5">
-              {detail.item.image && (
-                <Image
-                  src={urlFor(detail.item.image).width(400).height(300).fit('crop').url()}
-                  alt={detail.item.name}
-                  fill
-                  sizes="360px"
-                  className="object-cover"
-                />
-              )}
-            </div>
-
-            <div>
+          <div key={detail.item._id} className="detail-fade-in flex min-h-0 flex-1 flex-col">
+            <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3">
               <p className="font-display text-xs uppercase tracking-widest text-zinc-500">{detail.type}</p>
-              <h3 className="mt-1 font-display text-xl tracking-wide text-gold">{detail.item.name}</h3>
-              {detail.item.description && (
-                <p className="mt-3 text-sm leading-relaxed text-zinc-300">{detail.item.description}</p>
-              )}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-xl text-zinc-400 transition-colors hover:text-gold active:bg-zinc-800"
+              >
+                ✕
+              </button>
             </div>
 
-            {!!detail.item.notableCharacters?.length && (
-              <div>
-                <p className="text-xs uppercase tracking-widest text-zinc-500">Notable Characters</p>
-                <ul className="mt-2 flex flex-wrap gap-2">
-                  {detail.item.notableCharacters.map((name) => (
-                    <li
-                      key={name}
-                      className="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-xs text-zinc-300"
-                    >
-                      {name}
-                    </li>
-                  ))}
-                </ul>
+            <div className="flex flex-col gap-5 overflow-y-auto p-6">
+              <div className="relative h-40 w-full overflow-hidden rounded-lg bg-zinc-800 ring-1 ring-white/5">
+                {detail.item.image && (
+                  <Image
+                    src={urlFor(detail.item.image).width(400).height(300).fit('crop').url()}
+                    alt={detail.item.name}
+                    fill
+                    sizes="360px"
+                    className="object-cover"
+                  />
+                )}
               </div>
-            )}
 
-            {!!detail.item.keyEvents?.length && (
               <div>
-                <p className="text-xs uppercase tracking-widest text-zinc-500">Key Events</p>
-                <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-zinc-300">
-                  {detail.item.keyEvents.map((event) => (
-                    <li key={event}>{event}</li>
-                  ))}
-                </ul>
+                <h3 className="font-display text-xl tracking-wide text-gold">{detail.item.name}</h3>
+                {detail.item.description && (
+                  <p className="mt-3 text-sm leading-relaxed text-zinc-300">{detail.item.description}</p>
+                )}
               </div>
-            )}
 
-            {!!detail.item.appearances?.length && (
-              <div>
-                <p className="text-xs uppercase tracking-widest text-zinc-500">Appearances</p>
-                <p className="mt-2 text-sm text-zinc-300">{detail.item.appearances.join(' • ')}</p>
-              </div>
-            )}
+              {!!detail.item.notableCharacters?.length && (
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-zinc-500">Notable Characters</p>
+                  <ul className="mt-2 flex flex-wrap gap-2">
+                    {detail.item.notableCharacters.map((name) => (
+                      <li
+                        key={name}
+                        className="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-xs text-zinc-300"
+                      >
+                        {name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-            {detail.item.trivia && (
-              <p className="border-t border-zinc-800 pt-4 text-xs italic text-zinc-500">{detail.item.trivia}</p>
-            )}
+              {!!detail.item.keyEvents?.length && (
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-zinc-500">Key Events</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-zinc-300">
+                    {detail.item.keyEvents.map((event) => (
+                      <li key={event}>{event}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {!!detail.item.appearances?.length && (
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-zinc-500">Appearances</p>
+                  <p className="mt-2 text-sm text-zinc-300">{detail.item.appearances.join(' • ')}</p>
+                </div>
+              )}
+
+              {detail.item.trivia && (
+                <p className="border-t border-zinc-800 pt-4 text-xs italic text-zinc-500">{detail.item.trivia}</p>
+              )}
+            </div>
           </div>
         )}
       </aside>
