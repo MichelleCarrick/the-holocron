@@ -5,7 +5,8 @@ import species from './species'
 import kyberCrystal from './kyberCrystal'
 import canonCharacter from './canonCharacter'
 import buildType from './buildType'
+import quizQuestion from './quizQuestion'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [archiveEntry, planet, species, kyberCrystal, canonCharacter, buildType],
+  types: [archiveEntry, planet, species, kyberCrystal, canonCharacter, buildType, quizQuestion],
 }
