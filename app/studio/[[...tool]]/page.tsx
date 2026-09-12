@@ -5,8 +5,16 @@
  *
  * You can learn more about the next-sanity package here:
  * https://github.com/sanity-io/next-sanity
+ *
+ * Studio is only served in development. In production (the deployed site
+ * on Vercel), this route 404s instead of shipping the authoring UI to the
+ * public internet. To edit content once deployed, run `npm run dev`
+ * locally and visit http://localhost:3000/studio — it talks directly to
+ * Sanity's API either way, so nothing about editing content requires the
+ * production domain to serve this route.
  */
 
+import { notFound } from 'next/navigation'
 import { NextStudio } from 'next-sanity/studio'
 import config from '../../../sanity.config'
 
@@ -15,5 +23,9 @@ export const dynamic = 'force-static'
 export { metadata, viewport } from 'next-sanity/studio'
 
 export default function StudioPage() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound()
+  }
+
   return <NextStudio config={config} />
 }
